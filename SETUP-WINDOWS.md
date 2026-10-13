@@ -20,6 +20,16 @@ python -m venv .venv
 powershell -ExecutionPolicy Bypass -File .\setup-ffmpeg.ps1
 ```
 
+## Sentence UI
+
+After setup and model approval, start the local UI:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-ui.ps1
+```
+
+Open http://127.0.0.1:7860 in your browser. Enter up to 200 characters and click **Generate voice**. Audio can be played or downloaded as WAV. The first request loads the model; subsequent requests reuse it. Each sentence uses a random speaker identity and no audio context, following upstream's basic example. Output is capped at 30 seconds and retains the original watermark. One sentence is generated at a time. Press Ctrl+C in the terminal to stop and release GPU memory. The server listens only on localhost.
+
 ## Model access
 
 Accept the model terms and obtain access using your own Hugging Face account:

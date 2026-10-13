@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSM · Text to voice</title>
+  <style>
+    :root { color-scheme: light; font-family: "Segoe UI", sans-serif; color: #183047; background: #eef4fa; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 64px 20px; }
+    main { max-width: 620px; margin: auto; }
+    h1 { font-size: clamp(30px, 6vw, 42px); font-weight: 650; letter-spacing: -.035em; margin: 0 0 10px; }
+    p { line-height: 1.6; color: #52677b; margin: 0; }
+    form { background: #fff; padding: 28px; border: 1px solid #d3dfeb; border-radius: 16px; margin-top: 28px; }
+    label { display: block; font-weight: 600; margin-bottom: 10px; }
+    textarea { display: block; width: 100%; min-height: 140px; resize: vertical; border: 1px solid #afc0d1; border-radius: 8px; padding: 14px; font: inherit; line-height: 1.6; color: inherit; }
+    textarea::placeholder { color: #667b8e; }
+    :focus-visible { outline: 3px solid #205fc3; outline-offset: 3px; }
+    .hint { font-size: 13px; margin-top: 8px; }
+    button { margin-top: 22px; border: 0; background: #205fc3; color: #fff; font: inherit; font-weight: 600; padding: 12px 20px; border-radius: 8px; cursor: pointer; }
+    button:hover { background: #194c9c; }
+    button:disabled { opacity: .65; cursor: wait; }
+    #status { margin-top: 16px; font-size: 14px; }
+    #status:empty { display: none; }
+    #status[data-error="true"] { color: #a52828; }
+    #result { margin-top: 24px; }
+    audio { display: block; width: 100%; margin: 12px 0; }
+    a { color: #205fc3; text-underline-offset: 3px; }
+    footer { margin-top: 22px; font-size: 13px; color: #52677b; }
+    @media (max-width: 480px) { body { padding-top: 32px; } form { padding: 20px; } button { width: 100%; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Text to voice</h1>
+  <p>Write a sentence. Hear it spoken by Sesame CSM.</p>
+  <form id="speech-form">
+    <label for="sentence">Your sentence</label>
+    <textarea id="sentence" maxlength="200" required placeholder="Hello from Sesame. It's good to hear your voice." aria-describedby="hint"></textarea>
+    <p id="hint" class="hint">Up to 200 characters. English works best.</p>
+    <button id="generate" type="submit">Generate voice</button>
+    <p id="status" role="status" aria-live="polite"></p>
+    <section id="result" aria-label="Generated speech" hidden>
+      <label for="player">Your audio</label>
+      <audio id="player" controls></audio>
+      <a id="download" download="speech.wav">Download WAV</a>
+    </section>
+  </form>
+  <footer>Powered by <a href="https://github.com/SesameAILabs/csm">Sesame CSM</a>. A random voice is used for each generation.</footer>
+</main>
+<script>
+  const form = document.getElementById('speech-form');
+  const sentence = document.getElementById('sentence');
+  const button = document.getElementById('generate');
+  const status = document.getElementById('status');
+  const result = document.getElementById('result');
+  const player = document.getElementById('player');
+  const download = document.getElementById('download');
+  let audioUrl;
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!sentence.value.trim()) { sentence.focus(); return; }
+    button.disabled = true;
+    form.setAttribute('aria-busy', 'true');
+    button.textContent = 'Generating…';
+    status.dataset.error = 'false';
+    status.textContent = 'Generating your voice. The first request also loads the model and can take a minute.';
+    player.pause();
+    try {
+      const response = await fetch('/generate', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({text: sentence.value.trim()})
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || `Generation failed (${response.status}). Try again.`);
+      }
+      const blob = await response.blob();
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = URL.createObjectURL(blob);
+      player.src = audioUrl;
+      download.href = audioUrl;
+      result.hidden = false;
+      status.textContent = 'Your voice is ready. Press play to listen.';
+    } catch (error) {
+      status.dataset.error = 'true';
+      status.textContent = error.message;
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Generate voice';
+      form.setAttribute('aria-busy', 'false');
+    }
+  });
+</script>
+</body>
+</html>

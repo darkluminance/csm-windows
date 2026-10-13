@@ -9,3 +9,5 @@ datasets==3.3.2
 pyarrow==19.0.1
 # Moshi 0.2.2 imports this during audio encoding, even without quantization.
 bitsandbytes==0.45.5
+# Local text-to-speech UI (also a transitive SilentCipher dependency).
+flask==3.1.3
