@@ -28,7 +28,7 @@ After setup and model approval, start the local UI:
 powershell -ExecutionPolicy Bypass -File .\run-ui.ps1
 ```
 
-Open http://127.0.0.1:7860 in your browser. Enter up to 200 characters and click **Generate voice**. Audio can be played or downloaded as WAV. The first request loads the model; subsequent requests reuse it. Each sentence uses a random speaker identity and no audio context, following upstream's basic example. Output is capped at 30 seconds and retains the original watermark. One sentence is generated at a time. Press Ctrl+C in the terminal to stop and release GPU memory. The server listens only on localhost.
+Open http://127.0.0.1:7860 in your browser. The page immediately starts loading the model; you can enter up to 200 characters while it loads. Once **Model ready** appears, click **Generate voice**. Audio can be played or downloaded as WAV. Subsequent requests and page reloads reuse the loaded model. Failed loading shows a retry button. Each sentence uses a random speaker identity and no audio context, following upstream's basic example. Output is capped at 30 seconds and retains the original watermark. One sentence is generated at a time. Press Ctrl+C in the terminal to stop and release GPU memory. The server listens only on localhost.
 
 ## Model access
 

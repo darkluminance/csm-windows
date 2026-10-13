@@ -38,8 +38,9 @@
     <label for="sentence">Your sentence</label>
     <textarea id="sentence" maxlength="200" required placeholder="Hello from Sesame. It's good to hear your voice." aria-describedby="hint"></textarea>
     <p id="hint" class="hint">Up to 200 characters. English works best.</p>
-    <button id="generate" type="submit">Generate voice</button>
-    <p id="status" role="status" aria-live="polite"></p>
+    <button id="generate" type="submit" disabled>Loading model…</button>
+    <button id="retry" type="button" hidden>Retry model loading</button>
+    <p id="status" role="status" aria-live="polite">Loading the voice model. You can type while it gets ready.</p>
     <section id="result" aria-label="Generated speech" hidden>
       <label for="player">Your audio</label>
       <audio id="player" controls></audio>
@@ -56,15 +57,41 @@
   const result = document.getElementById('result');
   const player = document.getElementById('player');
   const download = document.getElementById('download');
+  const retry = document.getElementById('retry');
+  let modelReady = false;
   let audioUrl;
+  async function prepareModel() {
+    retry.hidden = true;
+    button.disabled = true;
+    button.textContent = 'Loading model…';
+    status.dataset.error = 'false';
+    status.textContent = 'Loading the voice model. You can type while it gets ready.';
+    try {
+      const response = await fetch('/prepare', {method: 'POST'});
+      const data = await response.json();
+      if (!response.ok || !data.ready) throw new Error(data.error || 'Model loading failed. Retry to load it again.');
+      modelReady = true;
+      button.disabled = false;
+      button.textContent = 'Generate voice';
+      status.textContent = 'Model ready. Type a sentence and generate your voice.';
+    } catch (error) {
+      status.dataset.error = 'true';
+      status.textContent = error.message;
+      button.textContent = 'Model unavailable';
+      retry.hidden = false;
+    }
+  }
+  retry.addEventListener('click', prepareModel);
+  prepareModel();
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (!modelReady || button.disabled) return;
     if (!sentence.value.trim()) { sentence.focus(); return; }
     button.disabled = true;
     form.setAttribute('aria-busy', 'true');
     button.textContent = 'Generating…';
     status.dataset.error = 'false';
-    status.textContent = 'Generating your voice. The first request also loads the model and can take a minute.';
+    status.textContent = 'Generating your voice…';
     player.pause();
     try {
       const response = await fetch('/generate', {

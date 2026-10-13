@@ -35,15 +35,9 @@ def generate():
     try:
         import torch
         import torchaudio
-        from generator import load_csm_1b
-        from huggingface_hub.errors import GatedRepoError
-
-        global _generator
-        if not torch.cuda.is_available():
-            return jsonify(error='CUDA is unavailable. Check your NVIDIA driver and run setup-windows.ps1.'), 503
+        if _generator is None:
+            return jsonify(error='The model is not ready. Open or reload the page to load it first.'), 503
         try:
-            if _generator is None:
-                _generator = load_csm_1b(device='cuda')
             audio = _generator.generate(
                 text=text, speaker=0, context=[], max_audio_length_ms=30_000,
             )
@@ -51,8 +45,6 @@ def generate():
                 raise RuntimeError('The model returned empty or invalid audio.')
             output = io.BytesIO()
             torchaudio.save(output, audio.unsqueeze(0).cpu(), _generator.sample_rate, format='wav')
-        except GatedRepoError:
-            return jsonify(error='Model access is missing. Approve both Sesame CSM-1B and Llama-3.2-1B, then log in with huggingface-cli.'), 403
         except torch.cuda.OutOfMemoryError:
             torch.cuda.empty_cache()
             return jsonify(error='The GPU ran out of memory. Close other GPU apps and try a shorter sentence.'), 503
@@ -65,6 +57,32 @@ def generate():
         return jsonify(error='Speech generation failed. Check the terminal for details and try again.'), 500
     finally:
         _generation_lock.release()
+
+
+@app.post('/prepare')
+def prepare():
+    # The same lock protects initialization and generation across browser tabs.
+    with _generation_lock:
+        global _generator
+        if _generator is not None:
+            return jsonify(ready=True)
+        try:
+            import torch
+            from generator import load_csm_1b
+            from huggingface_hub.errors import GatedRepoError
+            if not torch.cuda.is_available():
+                return jsonify(error='CUDA is unavailable. Check your NVIDIA driver and run setup-windows.ps1.'), 503
+            try:
+                _generator = load_csm_1b(device='cuda')
+            except GatedRepoError:
+                return jsonify(error='Model access is missing. Approve both models and log in with huggingface-cli.'), 403
+            except torch.cuda.OutOfMemoryError:
+                torch.cuda.empty_cache()
+                return jsonify(error='The GPU ran out of memory. Close other GPU apps and retry.'), 503
+            return jsonify(ready=True)
+        except Exception:
+            app.logger.exception('Model preparation failed')
+            return jsonify(error='Model loading failed. Check the terminal for details, then retry.'), 500
 
 
 if __name__ == '__main__':

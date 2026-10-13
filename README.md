@@ -22,7 +22,7 @@ Access approval for both model repositories is required before generation. The o
 powershell -ExecutionPolicy Bypass -File .\run-ui.ps1
 ```
 
-Open http://127.0.0.1:7860, type a sentence, and click **Generate voice**. Play the result or download it as WAV. The model loads on the first request and stays loaded until you stop the server with Ctrl+C. This uses the original context-free generation example, so voice identity varies between generations.
+Open http://127.0.0.1:7860. The model starts loading as soon as the page opens; you can type while it loads. Once the status says **Model ready**, click **Generate voice**. Play the result or download it as WAV. The model stays loaded until you stop the server with Ctrl+C. This uses the original context-free generation example, so voice identity varies between generations.
 
 **2025/05/20** - CSM is availabile natively in [Hugging Face Transformers](https://huggingface.co/docs/transformers/main/en/model_doc/csm) 🤗 as of version `4.52.1`, more info available [in our model repo](https://huggingface.co/sesame/csm-1b)
 
