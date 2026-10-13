@@ -1,5 +1,21 @@
 # CSM
 
+## Windows setup edition
+
+This repository is derived from [SesameAILabs/csm](https://github.com/SesameAILabs/csm), originally developed by Sesame AI Labs and the authors credited below. The original project and commit history are preserved under the [Apache 2.0 license](LICENSE).
+
+This edition adds Windows PowerShell setup and launch scripts, compatible dependency pins, project-local FFmpeg/ffprobe installation, and checks for Hugging Face model access. Model code and audio watermarking are unchanged.
+
+Start with [Windows setup instructions](SETUP-WINDOWS.md):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup-windows.ps1
+.\.venv\Scripts\huggingface-cli.exe login
+powershell -ExecutionPolicy Bypass -File .\run-windows.ps1
+```
+
+Access approval for both model repositories is required before generation. The original upstream README follows.
+
 **2025/05/20** - CSM is availabile natively in [Hugging Face Transformers](https://huggingface.co/docs/transformers/main/en/model_doc/csm) 🤗 as of version `4.52.1`, more info available [in our model repo](https://huggingface.co/sesame/csm-1b)
 
 **2025/03/13** - We are releasing the 1B CSM variant. The checkpoint is [hosted on Hugging Face](https://huggingface.co/sesame/csm_1b).

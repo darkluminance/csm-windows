@@ -1,0 +1,9 @@
+-r requirements.txt
+triton-windows==3.1.0.post17
+# PyTorch 2.4 Windows wheels were built against the NumPy 1.x ABI.
+numpy==1.26.4
+# Triton imports setuptools at runtime; uv-created environments do not seed it.
+setuptools<81
+# Use the datasets/Arrow generation compatible with the upstream 2025 stack.
+datasets==3.3.2
+pyarrow==19.0.1
