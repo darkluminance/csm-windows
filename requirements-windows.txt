@@ -7,3 +7,5 @@ setuptools<81
 # Use the datasets/Arrow generation compatible with the upstream 2025 stack.
 datasets==3.3.2
 pyarrow==19.0.1
+# Moshi 0.2.2 imports this during audio encoding, even without quantization.
+bitsandbytes==0.45.5

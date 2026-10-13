@@ -22,6 +22,11 @@ def main():
     matrix = torch.ones((32, 32), device='cuda', dtype=torch.bfloat16)
     assert torch.all(matrix @ matrix == 32).item()
     print('CUDA BF16 matrix operation: OK')
+    from moshi.utils import quantize
+    projection = torch.nn.Linear(8, 4, bias=False, device='cuda')
+    inputs = torch.ones(1, 2, 8, device='cuda')
+    torch.testing.assert_close(quantize.linear(projection, inputs), projection(inputs))
+    print('Moshi audio linear path and bitsandbytes runtime import: OK')
     with tempfile.TemporaryDirectory() as directory:
         path = str(Path(directory) / 'check.wav')
         audio = torch.zeros(1, 2400)

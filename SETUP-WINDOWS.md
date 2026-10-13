@@ -2,6 +2,8 @@
 
 This checkout uses Python 3.11 and an isolated `.venv`, upstream pinned dependencies, PyTorch 2.4.0 with CUDA 12.4, and `triton-windows==3.1.0.post17`. Windows requirements also pin NumPy 1.26.4 for PyTorch's ABI and include setuptools for Triton's runtime imports. The installed NVIDIA driver can run the bundled CUDA runtime; a separate CUDA toolkit is not needed for eager inference.
 
+`bitsandbytes==0.45.5` is included because Moshi 0.2.2 imports it during prompt audio encoding even when quantization is disabled. If updating an existing setup, rerun `setup-windows.ps1` to install it.
+
 From PowerShell in this directory, install or repeat setup:
 
 ```powershell
@@ -55,4 +57,4 @@ uv pip check --python .venv/Scripts/python.exe
 .\.venv\Scripts\python.exe verify_setup.py
 ```
 
-The verification script checks CUDA BF16 operations, project imports, WAV I/O, FFmpeg/ffprobe MP3 conversion, and model access without downloading weights. It exits with status 1 if either gated model is inaccessible. To check only access, run `.\.venv\Scripts\python.exe check_model_access.py`.
+The verification script checks CUDA BF16 operations, project imports, Moshi's audio linear path and bitsandbytes runtime import, WAV I/O, FFmpeg/ffprobe MP3 conversion, and model access without downloading weights. It exits with status 1 if either gated model is inaccessible. To check only access, run `.\.venv\Scripts\python.exe check_model_access.py`.
