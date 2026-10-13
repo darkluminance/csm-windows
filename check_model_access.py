@@ -23,7 +23,7 @@ def check_model_access():
             response = getattr(error, 'response', None)
             print(f'Model access: {repo}: {type(error).__name__}, HTTP {getattr(response, "status_code", None)}. Check connection and token permissions.')
     if not accessible:
-        print('Generation paused. Wait for both model approvals; if needed, log in with .\\.venv\\Scripts\\huggingface-cli.exe login.')
+        print('Generation paused. Wait for both model approvals; then authenticate with the approved account. Locally use huggingface-cli login; in Colab rerun the authentication cell.')
     return accessible
 
 

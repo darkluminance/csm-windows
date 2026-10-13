@@ -179,7 +179,12 @@ class Generator:
 
 def load_csm_1b(device: str = "cuda") -> Generator:
     model = Model.from_pretrained("sesame/csm-1b")
-    dtype = torch.float32 if torch.device(device).type == 'cpu' else torch.bfloat16
+    if torch.device(device).type == 'cpu':
+        dtype = torch.float32
+    elif torch.device(device).type == 'cuda' and not torch.cuda.is_bf16_supported(including_emulation=False):
+        dtype = torch.float16  # Colab T4/V100 GPUs do not support native BF16.
+    else:
+        dtype = torch.bfloat16
     model.to(device=device, dtype=dtype)
 
     generator = Generator(model)

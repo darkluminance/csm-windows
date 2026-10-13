@@ -1,0 +1,7 @@
+-r requirements.txt
+numpy==1.26.4
+setuptools<81
+datasets==3.3.2
+pyarrow==19.0.1
+bitsandbytes==0.45.5
+flask==3.1.3
