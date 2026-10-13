@@ -22,6 +22,8 @@ powershell -ExecutionPolicy Bypass -File .\setup-ffmpeg.ps1
 
 ## Sentence UI
 
+The UI automatically uses CUDA when available or CPU otherwise. CUDA uses BF16 weights; CPU uses float32 and PyTorch's math attention backend to avoid nonfinite outputs from the PyTorch 2.4 CPU attention path. CPU loading and generation can take much longer and require enough system RAM for the model (approximately 6.2 GB of model weights, plus runtime overhead). Model readiness identifies the selected device.
+
 After setup and model approval, start the local UI:
 
 ```powershell
@@ -67,4 +69,4 @@ uv pip check --python .venv/Scripts/python.exe
 .\.venv\Scripts\python.exe verify_setup.py
 ```
 
-The verification script checks CUDA BF16 operations, project imports, Moshi's audio linear path and bitsandbytes runtime import, WAV I/O, FFmpeg/ffprobe MP3 conversion, and model access without downloading weights. It exits with status 1 if either gated model is inaccessible. To check only access, run `.\.venv\Scripts\python.exe check_model_access.py`.
+The verification script checks matrix operations on the selected CPU or CUDA device, project imports, Moshi's audio linear path and bitsandbytes runtime import, WAV I/O, FFmpeg/ffprobe MP3 conversion, and model access without downloading weights. It exits with status 1 if either gated model is inaccessible. To check only access, run `.\.venv\Scripts\python.exe check_model_access.py`.

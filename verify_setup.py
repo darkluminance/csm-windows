@@ -16,15 +16,15 @@ from check_model_access import check_model_access
 def main():
     print(f'PyTorch: {torch.__version__}; CUDA runtime: {torch.version.cuda}')
     print(f'Triton: {triton.__version__}')
-    if not torch.cuda.is_available():
-        raise RuntimeError('CUDA is unavailable.')
-    print(f'GPU: {torch.cuda.get_device_name(0)}')
-    matrix = torch.ones((32, 32), device='cuda', dtype=torch.bfloat16)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    dtype = torch.bfloat16 if device == 'cuda' else torch.float32
+    print(f'Device: {torch.cuda.get_device_name(0) if device == "cuda" else "CPU"}')
+    matrix = torch.ones((32, 32), device=device, dtype=dtype)
     assert torch.all(matrix @ matrix == 32).item()
-    print('CUDA BF16 matrix operation: OK')
+    print(f'{device} matrix operation: OK')
     from moshi.utils import quantize
-    projection = torch.nn.Linear(8, 4, bias=False, device='cuda')
-    inputs = torch.ones(1, 2, 8, device='cuda')
+    projection = torch.nn.Linear(8, 4, bias=False, device=device)
+    inputs = torch.ones(1, 2, 8, device=device)
     torch.testing.assert_close(quantize.linear(projection, inputs), projection(inputs))
     print('Moshi audio linear path and bitsandbytes runtime import: OK')
     with tempfile.TemporaryDirectory() as directory:

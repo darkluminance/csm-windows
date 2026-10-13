@@ -59,6 +59,7 @@
   const download = document.getElementById('download');
   const retry = document.getElementById('retry');
   let modelReady = false;
+  let modelDevice;
   let audioUrl;
   async function prepareModel() {
     retry.hidden = true;
@@ -71,9 +72,12 @@
       const data = await response.json();
       if (!response.ok || !data.ready) throw new Error(data.error || 'Model loading failed. Retry to load it again.');
       modelReady = true;
+      modelDevice = data.device;
       button.disabled = false;
       button.textContent = 'Generate voice';
-      status.textContent = 'Model ready. Type a sentence and generate your voice.';
+      status.textContent = modelDevice === 'cpu'
+        ? 'Model ready on CPU. Generation may take several minutes; start with a short sentence.'
+        : 'Model ready on GPU. Type a sentence and generate your voice.';
     } catch (error) {
       status.dataset.error = 'true';
       status.textContent = error.message;
@@ -91,7 +95,9 @@
     form.setAttribute('aria-busy', 'true');
     button.textContent = 'Generating…';
     status.dataset.error = 'false';
-    status.textContent = 'Generating your voice…';
+    status.textContent = modelDevice === 'cpu'
+      ? 'Generating on CPU. This may take several minutes.'
+      : 'Generating your voice…';
     player.pause();
     try {
       const response = await fetch('/generate', {

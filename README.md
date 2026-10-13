@@ -4,7 +4,7 @@
 
 This repository is derived from [SesameAILabs/csm](https://github.com/SesameAILabs/csm), originally developed by Sesame AI Labs and the authors credited below. The original project and commit history are preserved under the [Apache 2.0 license](LICENSE).
 
-This edition adds Windows PowerShell setup and launch scripts, compatible dependency pins, project-local FFmpeg/ffprobe installation, and checks for Hugging Face model access. Model code and audio watermarking are unchanged.
+This edition adds Windows PowerShell setup and launch scripts, compatible dependency pins, project-local FFmpeg/ffprobe installation, and checks for Hugging Face model access. It uses float32 model weights for CPU compatibility and the original BF16 weights on CUDA. Audio watermarking is preserved.
 
 Start with [Windows setup instructions](SETUP-WINDOWS.md):
 
@@ -17,6 +17,8 @@ powershell -ExecutionPolicy Bypass -File .\run-windows.ps1
 Access approval for both model repositories is required before generation. The original upstream README follows.
 
 ### Simple text-to-voice UI
+
+The UI selects CUDA when available and falls back to CPU otherwise. CPU generation is much slower and needs enough system RAM for the model; start with a short sentence.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\run-ui.ps1

@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from contextlib import nullcontext
 from typing import List, Tuple
 
 import torch
 import torchaudio
+from torch.nn.attention import SDPBackend, sdpa_kernel
 from huggingface_hub import hf_hub_download
 from models import Model
 from moshi.models import loaders
@@ -57,6 +59,10 @@ class Generator:
         self.sample_rate = mimi.sample_rate
         self.device = device
 
+    def _attention_context(self):
+        # PyTorch 2.4's fused CPU attention can produce nonfinite logits.
+        return sdpa_kernel(SDPBackend.MATH) if self.device.type == 'cpu' else nullcontext()
+
     def _tokenize_text_segment(self, text: str, speaker: int) -> Tuple[torch.Tensor, torch.Tensor]:
         frame_tokens = []
         frame_masks = []
@@ -80,7 +86,8 @@ class Generator:
 
         # (K, T)
         audio = audio.to(self.device)
-        audio_tokens = self._audio_tokenizer.encode(audio.unsqueeze(0).unsqueeze(0))[0]
+        with self._attention_context():
+            audio_tokens = self._audio_tokenizer.encode(audio.unsqueeze(0).unsqueeze(0))[0]
         # add EOS frame
         eos_frame = torch.zeros(audio_tokens.size(0), 1).to(self.device)
         audio_tokens = torch.cat([audio_tokens, eos_frame], dim=1)
@@ -144,7 +151,8 @@ class Generator:
             )
 
         for _ in range(max_generation_len):
-            sample = self._model.generate_frame(curr_tokens, curr_tokens_mask, curr_pos, temperature, topk)
+            with self._attention_context():
+                sample = self._model.generate_frame(curr_tokens, curr_tokens_mask, curr_pos, temperature, topk)
             if torch.all(sample == 0):
                 break  # eos
 
@@ -156,7 +164,8 @@ class Generator:
             ).unsqueeze(1)
             curr_pos = curr_pos[:, -1:] + 1
 
-        audio = self._audio_tokenizer.decode(torch.stack(samples).permute(1, 2, 0)).squeeze(0).squeeze(0)
+        with self._attention_context():
+            audio = self._audio_tokenizer.decode(torch.stack(samples).permute(1, 2, 0)).squeeze(0).squeeze(0)
 
         # This applies an imperceptible watermark to identify audio as AI-generated.
         # Watermarking ensures transparency, dissuades misuse, and enables traceability.
@@ -170,7 +179,8 @@ class Generator:
 
 def load_csm_1b(device: str = "cuda") -> Generator:
     model = Model.from_pretrained("sesame/csm-1b")
-    model.to(device=device, dtype=torch.bfloat16)
+    dtype = torch.float32 if torch.device(device).type == 'cpu' else torch.bfloat16
+    model.to(device=device, dtype=dtype)
 
     generator = Generator(model)
     return generator

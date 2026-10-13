@@ -65,21 +65,20 @@ def prepare():
     with _generation_lock:
         global _generator
         if _generator is not None:
-            return jsonify(ready=True)
+            return jsonify(ready=True, device=str(_generator.device))
         try:
             import torch
             from generator import load_csm_1b
             from huggingface_hub.errors import GatedRepoError
-            if not torch.cuda.is_available():
-                return jsonify(error='CUDA is unavailable. Check your NVIDIA driver and run setup-windows.ps1.'), 503
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
             try:
-                _generator = load_csm_1b(device='cuda')
+                _generator = load_csm_1b(device=device)
             except GatedRepoError:
                 return jsonify(error='Model access is missing. Approve both models and log in with huggingface-cli.'), 403
             except torch.cuda.OutOfMemoryError:
                 torch.cuda.empty_cache()
                 return jsonify(error='The GPU ran out of memory. Close other GPU apps and retry.'), 503
-            return jsonify(ready=True)
+            return jsonify(ready=True, device=str(_generator.device))
         except Exception:
             app.logger.exception('Model preparation failed')
             return jsonify(error='Model loading failed. Check the terminal for details, then retry.'), 500
