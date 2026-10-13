@@ -32,7 +32,7 @@ powershell -ExecutionPolicy Bypass -File .\run-ui.ps1
 
 Open http://127.0.0.1:7860. The model starts loading as soon as the page opens; you can type while it loads. Once the status says **Model ready**, click **Generate voice**. Play the result or download it as WAV. The model stays loaded until you stop the server with Ctrl+C.
 
-Choose **Random voice**, **Conversational A**, or **Conversational B** in either UI. The conversational options guide speech using the matching reference audio and transcript from Sesame's original demo; preview the reference before generating. Random uses no audio context. Voice matching can vary between results.
+Choose **Random (no reference)** or one of six sample recordings in either UI: two conversations and four readings. The labels describe what the speakers say; play a sample to hear its voice before generating. The selected recording and its transcript guide the generated voice. Random uses no audio reference. This base model can produce varied voices, but does not contain a fixed catalog of named or gender-labeled voices. Voice matching can vary between results. The samples come from Sesame's [CSM model repository](https://huggingface.co/sesame/csm-1b/tree/main/prompts), with matching transcripts from its [official demo](https://huggingface.co/spaces/sesame/csm-1b/blob/main/app.py).
 
 **2025/05/20** - CSM is availabile natively in [Hugging Face Transformers](https://huggingface.co/docs/transformers/main/en/model_doc/csm) 🤗 as of version `4.52.1`, more info available [in our model repo](https://huggingface.co/sesame/csm-1b)
 

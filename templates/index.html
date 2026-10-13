@@ -46,7 +46,7 @@
       <select id="voice" aria-describedby="voice-hint">
         {% for id, name in voices.items() %}<option value="{{ id }}">{{ name }}</option>{% endfor %}
       </select>
-      <p id="voice-hint" class="hint">Choose a reference voice, or let CSM create a random voice.</p>
+      <p id="voice-hint" class="hint">CSM has no fixed voice list. Pick a sample recording to guide the voice, or choose Random for a voice without a reference. Press play below to hear the selected sample first.</p>
       <audio id="reference" aria-label="Reference voice preview" controls hidden></audio>
     </div>
     <button id="generate" type="submit" disabled>Loading model…</button>
