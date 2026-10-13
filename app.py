@@ -1,4 +1,4 @@
-"""Local sentence-to-speech UI following Sesame's context-free example."""
+"""Local sentence-to-speech UI using Sesame's random and reference voice examples."""
 import io
 import os
 import threading
@@ -9,6 +9,7 @@ os.environ['NO_TORCH_COMPILE'] = '1'
 os.environ['PATH'] = str(ROOT / '.tools/ffmpeg/bin') + os.pathsep + os.environ['PATH']
 
 from flask import Flask, jsonify, render_template, request, send_file
+from voices import VOICE_OPTIONS, PROMPT_TEXT, prompt_path, voice_context
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 4096
@@ -18,7 +19,23 @@ _generation_lock = threading.Lock()
 
 @app.get('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', voices=VOICE_OPTIONS)
+
+
+@app.get('/voices')
+def voices():
+    return jsonify(voices=[{'id': key, 'name': name} for key, name in VOICE_OPTIONS.items()])
+
+
+@app.get('/voices/<voice>')
+def preview_voice(voice):
+    if voice not in PROMPT_TEXT:
+        return jsonify(error='Choose one of the reference voices.'), 404
+    try:
+        return send_file(prompt_path(voice), mimetype='audio/wav')
+    except Exception:
+        app.logger.exception('Reference voice preview failed')
+        return jsonify(error='Reference audio is unavailable. Check model access and retry.'), 503
 
 
 @app.post('/generate')
@@ -30,6 +47,9 @@ def generate():
     text = text.strip()
     if len(text) > 200:
         return jsonify(error='Use 200 characters or fewer.'), 400
+    voice = data.get('voice', 'random')
+    if not isinstance(voice, str) or voice not in VOICE_OPTIONS:
+        return jsonify(error='Choose one of the listed voices.'), 400
     if not _generation_lock.acquire(blocking=False):
         return jsonify(error='Another sentence is being generated. Try again when it finishes.'), 409
     try:
@@ -39,7 +59,7 @@ def generate():
             return jsonify(error='The model is not ready. Open or reload the page to load it first.'), 503
         try:
             audio = _generator.generate(
-                text=text, speaker=0, context=[], max_audio_length_ms=30_000,
+                text=text, speaker=0, context=voice_context(voice, _generator.sample_rate), max_audio_length_ms=30_000,
             )
             if audio.numel() == 0 or not torch.isfinite(audio).all().item():
                 raise RuntimeError('The model returned empty or invalid audio.')

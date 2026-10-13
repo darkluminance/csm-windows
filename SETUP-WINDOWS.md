@@ -30,7 +30,11 @@ After setup and model approval, start the local UI:
 powershell -ExecutionPolicy Bypass -File .\run-ui.ps1
 ```
 
-Open http://127.0.0.1:7860 in your browser. The page immediately starts loading the model; you can enter up to 200 characters while it loads. Once **Model ready** appears, click **Generate voice**. Audio can be played or downloaded as WAV. Subsequent requests and page reloads reuse the loaded model. Failed loading shows a retry button. Each sentence uses a random speaker identity and no audio context, following upstream's basic example. Output is capped at 30 seconds and retains the original watermark. One sentence is generated at a time. Press Ctrl+C in the terminal to stop and release GPU memory. The server listens only on localhost.
+Open http://127.0.0.1:7860 in your browser. The page immediately starts loading the model; you can enter up to 200 characters while it loads. Once **Model ready** appears, click **Generate voice**. Audio can be played or downloaded as WAV. Subsequent requests and page reloads reuse the loaded model. Failed loading shows a retry button. Select a reference voice to guide the speaker identity, or choose Random voice for context-free generation. Output is capped at 30 seconds and retains the original watermark. One sentence is generated at a time. Press Ctrl+C in the terminal to stop and release GPU memory. The server listens only on localhost.
+
+### Voice selection
+
+The local UI and Colab widget offer Random voice, Conversational A, and Conversational B. Preview either reference voice, select it, and generate a sentence. The two references and transcripts come from Sesame's original `run_csm.py` example and guide the speaker identity; selecting a speaker number alone does not select a fixed voice. Random keeps the context-free behavior. Voice matching can vary. Reference audio is downloaded from the same approved CSM model repository and cached; no extra model is loaded. Watermarking remains enabled.
 
 ## Model access
 

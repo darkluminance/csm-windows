@@ -30,7 +30,9 @@ The UI selects CUDA when available and falls back to CPU otherwise. CPU generati
 powershell -ExecutionPolicy Bypass -File .\run-ui.ps1
 ```
 
-Open http://127.0.0.1:7860. The model starts loading as soon as the page opens; you can type while it loads. Once the status says **Model ready**, click **Generate voice**. Play the result or download it as WAV. The model stays loaded until you stop the server with Ctrl+C. This uses the original context-free generation example, so voice identity varies between generations.
+Open http://127.0.0.1:7860. The model starts loading as soon as the page opens; you can type while it loads. Once the status says **Model ready**, click **Generate voice**. Play the result or download it as WAV. The model stays loaded until you stop the server with Ctrl+C.
+
+Choose **Random voice**, **Conversational A**, or **Conversational B** in either UI. The conversational options guide speech using the matching reference audio and transcript from Sesame's original demo; preview the reference before generating. Random uses no audio context. Voice matching can vary between results.
 
 **2025/05/20** - CSM is availabile natively in [Hugging Face Transformers](https://huggingface.co/docs/transformers/main/en/model_doc/csm) 🤗 as of version `4.52.1`, more info available [in our model repo](https://huggingface.co/sesame/csm-1b)
 
